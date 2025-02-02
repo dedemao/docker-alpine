@@ -1,0 +1,76 @@
+version: '3.8'
+services:
+  apache-php74:
+    image: httpd:alpine
+    container_name: apache-php74
+    ports:
+      - "80:80"
+      - "8074:80"
+    volumes:
+      - wwwroot:/var/www/html
+      - ./server/apache/conf/php74.conf:/usr/local/apache2/conf/extra/php74.conf
+      - ./server/apache/logs:/usr/local/apache2/logs
+    command: ["httpd", "-D", "FOREGROUND", "-f", "/usr/local/apache2/conf/httpd.conf", "-C", "Include conf/extra/php74.conf"]
+    depends_on:
+      - php74
+    networks:
+      - default
+      
+  apache-php83:
+    image: httpd:alpine
+    container_name: apache-php83
+    ports:
+      - "8083:80"
+    volumes:
+      - wwwroot:/var/www/html
+      - ./server/apache/conf/php83.conf:/usr/local/apache2/conf/extra/php83.conf
+      - ./server/apache/logs:/usr/local/apache2/logs
+    command: ["httpd", "-D", "FOREGROUND", "-f", "/usr/local/apache2/conf/httpd.conf", "-C", "Include conf/extra/php83.conf"]
+    depends_on:
+      - php83
+    networks:
+      - default      
+
+  php74:
+    build: ./php74
+    container_name: php74
+    volumes:
+      - wwwroot:/var/www/html
+    networks:
+      - default
+  php83:
+    build: ./php83
+    container_name: php83
+    volumes:
+      - wwwroot:/var/www/html
+    networks:
+      - default
+  db:
+    image: mysql:8.0
+    container_name: mysql
+    ports: 
+        - "3306:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: test
+      MYSQL_PASSWORD: test
+    volumes:
+        - ./dump:/docker-entrypoint-initdb.d
+        - ./server/mysql/conf.d:/etc/mysql/conf.d
+        - ./server/mysql/logs:/var/log/mysql
+        - mysql_data:/var/lib/mysql
+    networks:
+      - default
+volumes:
+  mysql_data:
+  wwwroot:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./www
+      o: bind
+networks:
+  default:
+    driver: bridge
