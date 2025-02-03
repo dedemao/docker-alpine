@@ -6,7 +6,7 @@
 </head>
 <body>
     <div class="container">
-    <?php echo "<h1>Hello,docker!</h1>"; ?>
+    <?php echo "<h1>Hello,docker!</h1><h2>当前PHP版本：".phpversion()."</h2>"; ?>
     <?php
     $conn = mysqli_connect('db', 'test', 'test', "testdb");
     $query = 'SELECT * From person';
